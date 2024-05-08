@@ -1,0 +1,33 @@
+services:
+  # バックエンドサーバー
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-test
+    tty: true
+    volumes:
+      - ./backend/app:/app
+    environment:
+      - HOST=0.0.0.0
+      - TZ=Asia/Tokyo
+      - LANG=C.UTF-8
+    working_dir: /app
+    ports:
+       - 0.0.0.0:3500:8000
+    command: uvicorn app:app --host 0.0.0.0
+
+  # ローカルプロキシ
+  proxy:
+    image: mitmproxy/mitmproxy:latest
+    container_name: proxy-test
+    tty: true
+    volumes:
+      - ./proxy/app:/app
+      - ./proxy/.mitmproxy:/home/mitmproxy
+    environment:
+      - TZ=Asia/Tokyo
+    working_dir: /app
+    ports:
+      - 0.0.0.0:3600:8080
+    command: mitmdump -s app.py
